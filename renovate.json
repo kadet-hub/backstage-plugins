@@ -1,0 +1,59 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended", "helpers:pinGitHubActionDigests"],
+  "minimumReleaseAge": "3 days",
+  "minimumReleaseAgeBehaviour": "timestamp-required",
+  "internalChecksFilter": "strict",
+  "platformAutomerge": false,
+  "lockFileMaintenance": {
+    "enabled": true
+  },
+  "customManagers": [
+    {
+      "description": "Tool versions marked with a renovate comment; release-asset pins carry their checksum along",
+      "customType": "regex",
+      "managerFilePatterns": ["/^\\.github/workflows/[^/]+\\.yml$/"],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>github-release-attachments) depName=(?<depName>\\S+)\\n\\s*[A-Z_]+: (?<currentValue>\\S+)\\n\\s*[A-Z_]+_SHA256: (?<currentDigest>[0-9a-f]{64})"
+      ]
+    },
+    {
+      "description": "BS-16: backstage.json names the Backstage release the @backstage packages come from",
+      "customType": "regex",
+      "managerFilePatterns": ["/^backstage\\.json$/"],
+      "matchStrings": ["\"version\": \"(?<currentValue>[^\"]+)\""],
+      "depNameTemplate": "backstage/backstage",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v(?<version>.+)$"
+    }
+  ],
+  "packageRules": [
+    {
+      "description": "BS-16: the @backstage packages and backstage.json move together in one pull request",
+      "matchPackageNames": ["@backstage/**", "backstage/backstage"],
+      "groupName": "backstage"
+    },
+    {
+      "description": "Runners stay on ubuntu-24.04: actionlint 1.7.12 does not know newer labels",
+      "matchDatasources": ["github-runners"],
+      "matchPackageNames": ["ubuntu"],
+      "allowedVersions": "24.04"
+    },
+    {
+      "description": "Node stays on 24, the newest major Backstage 1.56 supports (engines 22 || 24)",
+      "matchDatasources": ["node-version"],
+      "allowedVersions": "<25"
+    },
+    {
+      "description": "Renovate merges its own pull request once every check passed; majors wait for a maintainer",
+      "matchUpdateTypes": ["minor", "patch", "digest", "pin", "pinDigest"],
+      "automerge": true
+    },
+    {
+      "description": "A digest update of an action under the same version is a moved tag",
+      "matchManagers": ["github-actions"],
+      "matchUpdateTypes": ["digest"],
+      "automerge": false
+    }
+  ]
+}
