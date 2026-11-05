@@ -1,0 +1,52 @@
+{
+  "name": "@kadet-hub/backstage-plugin-scaffolder-backend-module-kadet-hub",
+  "version": "0.1.0",
+  "description": "Scaffolder action that adds a signed kadet-hub recipe to a Kapitan repository, pinned by digest",
+  "license": "Apache-2.0",
+  "homepage": "https://kadet-hub.org",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kadet-hub/backstage-plugins.git",
+    "directory": "plugins/scaffolder-backend-module-kadet-hub"
+  },
+  "keywords": [
+    "backstage",
+    "backstage-plugin",
+    "scaffolder",
+    "kapitan",
+    "kadet-hub"
+  ],
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "publishConfig": {
+    "access": "public",
+    "main": "dist/index.cjs.js",
+    "types": "dist/index.d.ts"
+  },
+  "backstage": {
+    "role": "backend-plugin-module",
+    "pluginId": "scaffolder",
+    "pluginPackage": "@backstage/plugin-scaffolder-backend"
+  },
+  "scripts": {
+    "build": "backstage-cli package build",
+    "lint": "backstage-cli package lint",
+    "test": "backstage-cli package test",
+    "clean": "backstage-cli package clean",
+    "prepack": "backstage-cli package prepack",
+    "postpack": "backstage-cli package postpack"
+  },
+  "dependencies": {
+    "@backstage/backend-plugin-api": "^1.11.0",
+    "@backstage/plugin-scaffolder-node": "^0.13.8",
+    "sigstore": "^5.0.0"
+  },
+  "devDependencies": {
+    "@backstage/backend-test-utils": "^1.11.8",
+    "@backstage/cli": "^0.36.7",
+    "@backstage/plugin-scaffolder-node-test-utils": "^0.3.16"
+  },
+  "files": [
+    "dist"
+  ]
+}
