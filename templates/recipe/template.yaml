@@ -1,0 +1,56 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: kadet-hub-recipe
+  title: New app from a kadet-hub recipe
+  description: Adds a kadet-hub recipe to a Kapitan repository as a target plus a fetch inventory pinned by digest, and opens a pull request.
+  tags: [kapitan, kadet-hub]
+spec:
+  owner: kadet-hub
+  type: service
+  parameters:
+    - title: Recipe
+      required: [recipe, target]
+      properties:
+        recipe:
+          title: Recipe
+          type: string
+          description: A recipe name from https://kadet-hub.org/recipes/
+          default: immich
+        target:
+          title: Target name
+          type: string
+          pattern: '^[a-z0-9][a-z0-9-]*$'
+    - title: Repository
+      required: [repoUrl]
+      properties:
+        repoUrl:
+          title: Kapitan repository
+          type: string
+          ui:field: RepoUrlPicker
+          ui:options:
+            allowedHosts: [github.com]
+  steps:
+    - id: recipe
+      name: Pin the recipe from the attested index
+      action: kadet-hub:recipe:add
+      input:
+        recipe: ${{ parameters.recipe }}
+        target: ${{ parameters.target }}
+    - id: pr
+      name: Open the pull request
+      action: publish:github:pull-request
+      input:
+        repoUrl: ${{ parameters.repoUrl }}
+        branchName: kadet-hub/${{ parameters.target }}
+        title: 'feat: add ${{ parameters.recipe }} ${{ steps.recipe.output.version }} as target ${{ parameters.target }}'
+        description: |
+          Pins ghcr.io/kadet-hub/recipes/${{ parameters.recipe }}:${{ steps.recipe.output.version }}@${{ steps.recipe.output.digest }}
+          from kadet-hub index serial ${{ steps.recipe.output.serial }}. Backstage verified the index attestation;
+          the consumer workflow verifies the recipe again before it compiles. `.kapitan-sandbox.yaml` needs:
+
+          ${{ steps.recipe.output.policy }}
+  output:
+    links:
+      - title: Pull request
+        url: ${{ steps.pr.output.remoteUrl }}

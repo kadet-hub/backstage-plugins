@@ -1,0 +1,30 @@
+{
+  "name": "root",
+  "version": "0.0.0",
+  "private": true,
+  "engines": {
+    "node": "22 || 24"
+  },
+  "packageManager": "yarn@4.18.1+sha512.b2e1e7524f654f2749d32b4ebcb4622473cb5bcbc485df2007e12a154e50162a4d795526768bc5f5b8f81717bfd79deb2472813d86fb5ae2eb551fa9c872b08f",
+  "workspaces": [
+    "plugins/*"
+  ],
+  "scripts": {
+    "tsc": "tsc",
+    "lint": "backstage-cli repo lint",
+    "test": "backstage-cli repo test",
+    "prettier:check": "prettier --check .",
+    "fix": "backstage-cli repo fix"
+  },
+  "devDependencies": {
+    "@backstage/cli": "^0.36.7",
+    "@backstage/cli-defaults": "^0.1.7",
+    "@jest/environment-jsdom-abstract": "^30.5.0",
+    "@types/jest": "^30.0.0",
+    "jest": "^30.5.0",
+    "jsdom": "^27.1.0",
+    "prettier": "^2.3.2",
+    "typescript": "~5.8.0"
+  },
+  "prettier": "@backstage/cli/config/prettier"
+}

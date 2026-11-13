@@ -1,0 +1,12 @@
+node_modules/
+dist/
+dist-types/
+coverage/
+*.log
+.DS_Store
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/sdks
+!.yarn/versions
