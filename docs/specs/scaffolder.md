@@ -1,7 +1,7 @@
 # kadet-hub Backstage plugins: Scaffolder
 
 Status: Draft
-Code: `plugins/scaffolder-backend-module-kadet-hub/`, `templates/recipe/`, `renovate.json` (BS-16), `.github/workflows/ci.yml`, `.gitattributes`
+Code: `plugins/scaffolder-backend-module-kadet-hub/`, `templates/recipe/`, `renovate.json` (BS-16), `.github/workflows/ci.yml`, `.github/workflows/release.yml`, `.gitattributes`
 Verified against: main @ e44a804
 
 Related: kadet-hub/registry [consumers.md](https://github.com/kadet-hub/registry/blob/main/docs/specs/consumers.md) (CON-2, CON-4, CON-5), [recipes.md](https://github.com/kadet-hub/registry/blob/main/docs/specs/recipes.md) (REC-13), [catalog.md](https://github.com/kadet-hub/registry/blob/main/docs/specs/catalog.md) (CAT-34d).
@@ -64,6 +64,15 @@ template.
   workflow, free of a Node toolchain of about 1,800 locked npm packages, and
   lets the plugin follow Backstage's monthly releases. backstage/community-plugins
   requires evidence of community demand, which kadet-hub cannot show yet.
+
+- DEC-6: A tag `scaffolder-backend-module-kadet-hub-vX.Y.Z` releases the
+  package. It starts `.github/workflows/release.yml`, which publishes that
+  version to npm. Formerly OQ-8.
+
+  The repository has one package, so Backstage's changesets would add a
+  dependency and a versioning step that the version field in `package.json`
+  already covers. kadet-hub/recipes and kadet-hub/generators tag their
+  releases the same way.
 
 ## Index verification
 
@@ -249,7 +258,16 @@ npm trusted publishing lets a GitHub Actions workflow publish through OIDC
 without a token, and then adds provenance on its own. It needs npm 11.5.1 or
 later, `id-token: write`, and a `repository.url` in `package.json` that
 matches the GitHub repository. A trusted publisher can only be configured on
-a package that exists, so the first version is published by hand.
+a package that exists, so the first version is published by hand. A new
+trusted publisher configuration expires when it has not published within 2
+days, so it is created just before the tag of the second version.
+
+The release workflow builds the package and packs it with `yarn pack`, which
+runs backstage-cli's `prepack` and applies `publishConfig`. npm publishes that
+tarball, because npm documents trusted publishing for its own CLI. Node
+24.22.2 ships npm 11.19.1. The workflow skips a version that is already on
+npm, so the tag of the version published by hand can follow it. The tag goes
+on a `main` commit whose `ci` run passed. The workflow does not check that.
 
 The directory lists a plugin through a pull request to backstage/backstage
 that adds `microsite/data/plugins/<name>.yaml`. CI validates it with
@@ -275,8 +293,14 @@ status: active
   through npm trusted publishing, from the second version on, with
   `repository` in `package.json` pointing at this repository.
 
+  - Test: manual: after the `release` run of the second version's tag, `npm view <package>@<version> dist.attestations` lists the provenance
+  - Since: this change (not run yet)
+
+- BS-14a: The release workflow MUST fail when the tag names another version
+  than `package.json`.
+
   - Test: none
-  - Since: not implemented
+  - Since: this change
 
 - BS-15: The directory entry MUST pass `scripts/verify-plugin-directory.js`,
   including `status`, which the documentation's example omits and the schema
@@ -321,6 +345,8 @@ status: active
 | Catalog browser page in Backstage                                                             | Browse recipes without leaving Backstage                                                             | Duplicates kadet-hub.org                                                                                   |
 | Code in backstage/community-plugins (DEC-5)                                                   | `@backstage-community` scope, shared CI and release tooling                                          | Requires demand evidence, monthly maintainer duties, volunteer review of 2 to 3 weeks                      |
 | Code inside kadet-hub/registry (DEC-5)                                                        | Index format and action change in one pull request                                                   | Adds a Node toolchain to the repository that holds the release workflow                                    |
+| Release by tag (DEC-6)                                                                        | No dependency; same scheme as kadet-hub/recipes and generators                                       | Version bump and changelog by hand                                                                         |
+| Changesets (DEC-6)                                                                            | Backstage's own release tooling; changelog per release                                               | A dependency and a versioning step for one package                                                         |
 
 ## Implementation inventory
 
@@ -335,6 +361,7 @@ status: active
 | Template            | `templates/recipe/template.yaml`                                                                                                                      |
 | Backstage release   | 1.56.3 in `backstage.json`                                                                                                                            |
 | Toolchain           | Node 24.22.2 in CI, engines `22 \|\| 24`, yarn 4.18.1 through corepack, TypeScript ~5.8, `sigstore` ^5.0.0 (locked 5.0.0)                             |
+| Release             | `.github/workflows/release.yml` on tag `scaffolder-backend-module-kadet-hub-vX.Y.Z`, npm 11.19.1 from Node 24.22.2                                    |
 | Directory entry     | backstage/backstage `microsite/data/plugins/kadet-hub.yaml`, category `Scaffolder`                                                                    |
 
 ## Open questions
@@ -367,7 +394,3 @@ status: active
 - OQ-7: One generic template with a recipe picker, which needs a frontend
   field extension reading `catalog.json` and the OQ-2 fields, or one template
   per recipe generated by the registry release?
-
-- OQ-8: Which release mechanism publishes to npm: Backstage's changesets, or
-  a tag such as `scaffolder-backend-module-kadet-hub-vX.Y.Z` as kadet-hub/recipes
-  tags its recipes? BS-14 depends on it.
