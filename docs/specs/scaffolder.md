@@ -1,7 +1,7 @@
 # kadet-hub Backstage plugins: Scaffolder
 
 Status: Draft
-Code: `plugins/scaffolder-backend-module-kadet-hub/`, `templates/recipe/`, `renovate.json` (BS-16), `.github/workflows/ci.yml`
+Code: `plugins/scaffolder-backend-module-kadet-hub/`, `templates/recipe/`, `renovate.json` (BS-16), `.github/workflows/ci.yml`, `.gitattributes`
 Verified against: main @ e44a804
 
 Related: kadet-hub/registry [consumers.md](https://github.com/kadet-hub/registry/blob/main/docs/specs/consumers.md) (CON-2, CON-4, CON-5), [recipes.md](https://github.com/kadet-hub/registry/blob/main/docs/specs/recipes.md) (REC-13), [catalog.md](https://github.com/kadet-hub/registry/blob/main/docs/specs/catalog.md) (CAT-34d).
@@ -236,6 +236,14 @@ lower bound of a caret range, so a Backstage app dedupes them with its own.
 `yarn.lock` pins every resolved version. `.yarnrc.yml` keeps the create-app
 default `npmMinimalAgeGate: 3d`, matching Renovate's `minimumReleaseAge`, and
 exempts `@backstage/*` as create-app does.
+
+`.gitattributes` marks `yarn.lock` as `-diff` and `linguist-generated`, so
+`git diff` and the GitHub diff view show a lockfile change as a single line.
+The lockfile has about 19,400 lines, and neat-bot reviews no diff above
+10,000 lines or 200,000 characters. A dependency change stays visible in
+`package.json`, and CI's `yarn install --immutable` fails when `yarn.lock`
+does not match it. A pull request that changes only `yarn.lock` gets no
+review of the lockfile itself.
 
 npm trusted publishing lets a GitHub Actions workflow publish through OIDC
 without a token, and then adds provenance on its own. It needs npm 11.5.1 or
